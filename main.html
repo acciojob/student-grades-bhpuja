@@ -1,16 +1,53 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Grades</title>
 </head>
-
 <body>
-	<!-- the entire body must be written by student -->
-    <script type="text/javascript" src="./script.js">
-</script>
+  <script>
+    // Function to read a file asynchronously
+    async function readFileAsync(filePath) {
+      const fs = await import('fs/promises');
+      return await fs.readFile(filePath, 'utf-8');
+    }
 
+    // Function to calculate average grades
+    function calculateAverageGrades(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(','); // First line is the header
+      const studentData = lines.slice(1);
+
+      const students = studentData.map((line) => {
+        const values = line.split(',');
+        const name = values[0];
+        const grades = values.slice(1).map(Number);
+        const average = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+        return { name, average: average.toFixed(2) };
+      });
+
+      return students;
+    }
+
+    // Main function to handle the process
+    async function main() {
+      try {
+        const filePath = './students.csv';
+        const csvData = await readFileAsync(filePath);
+        const students = calculateAverageGrades(csvData);
+
+        console.log('Student Average Grades:');
+        students.forEach((student) => {
+          console.log(`${student.name}: ${student.average}`);
+        });
+      } catch (error) {
+        console.error('Error reading the file:', error);
+      }
+    }
+
+    // Execute the main function
+    main();
+  </script>
 </body>
-
 </html>
