@@ -1,53 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Grades</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grades</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
-  <script>
-    // Function to read a file asynchronously
-    async function readFileAsync(filePath) {
-      const fs = await import('fs/promises');
-      return await fs.readFile(filePath, 'utf-8');
-    }
+    <h1>Student Grades</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Average Grade</th>
+            </tr>
+        </thead>
+        <tbody id="student-grades"></tbody>
+    </table>
 
-    // Function to calculate average grades
-    function calculateAverageGrades(csvData) {
-      const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(','); // First line is the header
-      const studentData = lines.slice(1);
+    <script>
+        // Function to calculate the average grade
+        function calculateAverage(grades) {
+            const total = grades.reduce((sum, grade) => sum + grade, 0);
+            return (total / grades.length).toFixed(2); // Return average rounded to 2 decimal places
+        }
 
-      const students = studentData.map((line) => {
-        const values = line.split(',');
-        const name = values[0];
-        const grades = values.slice(1).map(Number);
-        const average = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
-        return { name, average: average.toFixed(2) };
-      });
+        // Function to fetch and display student grades
+        async function fetchStudentGrades() {
+            try {
+                // Fetch the JSON file
+                const response = await fetch('students.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-      return students;
-    }
+                // Parse the JSON data
+                const students = await response.json();
 
-    // Main function to handle the process
-    async function main() {
-      try {
-        const filePath = './students.csv';
-        const csvData = await readFileAsync(filePath);
-        const students = calculateAverageGrades(csvData);
+                // Select the table body element
+                const tableBody = document.getElementById('student-grades');
 
-        console.log('Student Average Grades:');
-        students.forEach((student) => {
-          console.log(`${student.name}: ${student.average}`);
-        });
-      } catch (error) {
-        console.error('Error reading the file:', error);
-      }
-    }
+                // Populate the table with student data
+                students.forEach(student => {
+                    const average = calculateAverage(student.grades);
+                    const row = `<tr><td>${student.name}</td><td>${average}</td></tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching student data:', error.message);
+            }
+        }
 
-    // Execute the main function
-    main();
-  </script>
+        // Fetch and display the data when the page loads
+        fetchStudentGrades();
+    </script>
 </body>
 </html>
+
